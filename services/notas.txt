@@ -1,0 +1,110 @@
+Minikube
+
+
+Ver pods
+kubectl get pod
+
+Ver services
+kubectl get svc
+
+Ver configmap
+kubectl get configmap
+
+Ver replicasets
+kubectl get replicaset ou kubectl get rs
+
+Ver deployments
+kubectl get deployment ou kubectl get deploy
+
+Ver tudo
+kubectl get svc,pod,configmap,node,replicaset,deployment -o wide
+ou
+kubectl get svc,pod,configmap,node,rs,deploy -o wide
+
+Ver em tempo real
+kubectl get pod --watch
+ou
+kubectl get pod -w
+
+Deletar pod específico
+kubectl delete pod <nome_do_pod>
+
+Deletar todos os pods
+kubectl delete pod --all
+
+Deletar todos os services
+kubectl delete svc --all
+
+E assim para os outros...
+
+----------------------------------------------------------------------------
+
+Versionamento do deployment
+===========================
+
+kubectl rollout history deployment <nome_do_deployment>
+- output:
+deployment.apps/nginx-deployment 
+REVISION  CHANGE-CAUSE
+1         <none>
+
+Alterando a versão
+Exemplo: trocando a imagem
+image: nginx:stable
+para
+image: nginx:latest
+
+kubectl apply -f nginx-deployment.yml --record (--record será descontinuado)
+output:
+deployment.apps/nginx-deployment 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         kubectl apply --filename=nginx-deployment.yml --record=true
+
+Modificando a descrição da versão que por padrão é o comando executado
+kubectl annotate deploy nginx-deployment kubernetes.io/change-cause="[NGINX] Alterando a imagem de stable para latest"
+output:
+deployment.apps/nginx-deployment 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         [NGINX] Alterando a imagem de stable para latest
+
+Modificando novamente para uma versãonginx:1
+kubectl rollout history deployment nginx-deployment
+deployment.apps/nginx-deployment 
+REVISION  CHANGE-CAUSE
+1         <none>
+3         kubectl annotate deploy nginx-deployment description=[NGINX] Alterando a imagem de stable para latest --record=true
+4         kubectl apply --filename=nginx-deployment.yml --record=true
+
+Fazendo rollback de versão
+kubectl rollout undo deployment nginx-deployment --to-revision=2
+
+Verificando a imagem usada com a versão latest, pegando qualquer deployment
+kubectl describe pod nginx-deployment-77df4f8b8c-c7pm5
+output:
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  51s   default-scheduler  Successfully assigned default/nginx-deployment-77df4f8b8c-c7pm5 to minikube
+  Normal  Pulled     51s   kubelet            Container image "nginx:latest" already present on machine
+  Normal  Created    51s   kubelet            Created container: nginx-container
+  Normal  Started    51s   kubelet            Started container nginx-container
+
+
+----------------------------------------------------------------------------
+
+Volumes
+=======
+
+No linux utilizamos o minikube, então o volume do kubernetes será referenciado com 
+a pasta criada dentro do minikube e não da nossa máquina local
+
+Para acessar o minikube
+minikube ssh
+
+Criando a pasta dentro do minikube
+cd home
+mkdir primeiro-volume
+
+
